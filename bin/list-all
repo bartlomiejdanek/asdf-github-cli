@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+: "${GITHUB_API_TOKEN:=""}"
+
+readonly RELEASES_URL="https://api.github.com/repos/cli/cli/releases"
+
+#
+# https://github.com/rbenv/ruby-build/blob/ac92ec0507fad718e7abcf13540641937ecfef3f/bin/ruby-build#L1201
+sort_versions() {
+  sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z.\1/; s/$/.z/; G; s/\n/ /' | \
+    LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
+}
+
+list_versions() {
+  cmd="curl -fsS --url $RELEASES_URL"
+  [ -n "$GITHUB_API_TOKEN" ] && cmd+=" -H 'Authorization: token $GITHUB_API_TOKEN'"
+
+  echo "$(eval $cmd | grep -oE "tag_name\": *\"v[0-9].*\"," | grep -vE "(v3\.[3-9]|v[4-9]).*" | sed 's/tag_name\": *\"v//;s/\",//')"
+}
+
+#
+echo "$(list_versions | sort_versions | tr '\n' ' ')"
