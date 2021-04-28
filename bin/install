@@ -46,7 +46,7 @@ install_github_cli() {
   echo "Cleaning tmps..."
   rm -r $tmp_path $tmp_bin_path
 
-  echo "Run: asdf current github-cli ${version}"
+  echo "Run: asdf <global | local> github-cli ${version}"
   chmod +x $bin_path
 }
 
